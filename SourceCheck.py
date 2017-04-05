@@ -27,6 +27,14 @@ compressed_fileext_magic = {
     'bz2': 'bzip2 compressed'
 }
 
+def is_correct_file_ext(pkg, fname, magic):
+    file_ext = fname.rpartition('.')[2]
+    if (file_ext in compressed_fileext_magic and
+            magic and
+            compressed_fileext_magic[file_ext] not in magic):
+        printWarning(pkg, 'inconsistent-file-extension',
+                     fname, magic)
+
 
 class SourceCheck(AbstractCheck.AbstractCheck):
 
@@ -37,12 +45,7 @@ class SourceCheck(AbstractCheck.AbstractCheck):
         # process file list
         spec_file = None
         for fname, pkgfile in pkg.files().items():
-            file_ext = fname.rpartition('.')[2]
-            if (file_ext in compressed_fileext_magic and
-                    pkgfile.magic and
-                    compressed_fileext_magic[file_ext] not in pkgfile.magic):
-                printWarning(pkg, 'inconsistent-file-extension',
-                             fname, pkgfile.magic)
+            is_correct_file_ext(pkg, fname, pkgfile.magic)
 
             if fname.endswith('.spec'):
                 if spec_file:
